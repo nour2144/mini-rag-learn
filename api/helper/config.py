@@ -8,7 +8,8 @@ class Settings(BaseSettings):
 
     # File settings
     file_allowed_types: list[str]
-    max_file_size_mb: int
+    file_max_size_mb: int
+    file_chunk_size: int
 
     class Config:
         env_file = ".env"

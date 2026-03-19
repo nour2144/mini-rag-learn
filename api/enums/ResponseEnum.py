@@ -9,4 +9,6 @@ class ResponseEnum(Enum):
     FILE_VALIDATION_FAILURE = "File validation failed"
     FILE_TYPE_UNSUPPORTED = "Unsupported file type"
     FILE_SIZE_EXCEEDED = "File size exceeds the maximum allowed size"
+    FILE_UPLOAD_SUCCESS = "File uploaded successfully"
+    FILE_UPLOAD_FAILURE = "File upload failed"
     
