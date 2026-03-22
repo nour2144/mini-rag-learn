@@ -9,6 +9,14 @@ class ResponseEnum(Enum):
     FILE_VALIDATION_FAILURE = "File validation failed"
     FILE_TYPE_UNSUPPORTED = "Unsupported file type"
     FILE_SIZE_EXCEEDED = "File size exceeds the maximum allowed size"
+    # File upload responses
     FILE_UPLOAD_SUCCESS = "File uploaded successfully"
     FILE_UPLOAD_FAILURE = "File upload failed"
+    # File processing responses
+    FILE_PROCESSING_SUCCESS = "File processed successfully"
+    FILE_PROCESSING_FAILURE = "File processing failed"
+    #loader responses
+    LOADER_INITIALIZATION_SUCCESS = "Loader initialized successfully"
+    LOADER_INITIALIZATION_FAILURE = "Loader initialization failed"
+    
     

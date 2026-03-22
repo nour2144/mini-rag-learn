@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     file_allowed_types: list[str]
     file_max_size_mb: int
     file_chunk_size: int
+    folder_default_name: str
 
     class Config:
         env_file = ".env"

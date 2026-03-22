@@ -6,9 +6,13 @@ class FileController(BaseController):
     def __init__(self):
         super().__init__()
         
-    def get_file_path(self, file_id):
-        
-        file_dir = os.path.join(self.files_default_path, file_id)
-        if not os.path.exists(file_dir):
-            os.makedirs(file_dir, exist_ok=True)
-        return file_dir
+    def get_folder_path(self, folder_id: str):
+        folder_path = os.path.join(self.files_default_path, folder_id)
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path, exist_ok=True)
+        return folder_path
+    
+    def get_file_path(self, folder_id: str, file_id: str):
+        folder_path = self.get_folder_path(folder_id)
+        file_path = os.path.join(folder_path, file_id)
+        return file_path
