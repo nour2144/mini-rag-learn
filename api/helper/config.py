@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     file_chunk_size: int
     folder_default_name: str
 
+    # MongoDB settings
+    mongo_url: str
+    mongo_db_name: str
+
     class Config:
         env_file = ".env"
         

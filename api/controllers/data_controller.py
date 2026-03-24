@@ -8,7 +8,7 @@ class DataController(BaseController):
         super().__init__()
     
     async def validate_file(self, file):
-        # Implement file validation logic 
+        '''Validates the uploaded file's type and size against allowed settings.'''
         file_bytes = await file.read(2048)
         self.file_type = magic.from_buffer(file_bytes, mime=True)
         if self.file_type not in self.app_settings.file_allowed_types:
