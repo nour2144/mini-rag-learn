@@ -18,11 +18,11 @@ class FolderModel(BaseDBModel):
         """Retrieves a folder document by its ID or creates a new one if it doesn't exist."""
         folder_data = await self.collection.find_one({"folder_id": folder_id})
         if folder_data:
-            return FolderDB(**folder_data)
+            return FolderDB(**folder_data), folder_data.get("_id")
         else:
             new_folder = FolderDB(folder_id=folder_id)
             folder = await self.create_folder(new_folder)
-            return folder
+            return folder,folder._id
     async def get_all_folders(self, page: int = 1, page_size: int = Path(..., gt=10, lt=100, description="Number of items per page")):
         """Retrieves all folder documents from the database."""
         total_documents = await self.collection.count_documents({})

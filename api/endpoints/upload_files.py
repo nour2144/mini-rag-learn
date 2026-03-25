@@ -4,15 +4,16 @@ from fastapi import APIRouter, Path, UploadFile, File, HTTPException, Request
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 from ..controllers import DataController, FileController, ProcessController
-from ..models import FolderModel
+from ..models import FolderModel, ChunkModel
 from ..enums import ResponseEnum
+from ..models.db_schemes import ChunksDB
 
 data_router = APIRouter(prefix="/data", tags=["data"])
 @data_router.post("/upload")
 async def upload_file(request: Request, folder_id: str, file: UploadFile = File(...,description="File to upload")):
     """Endpoint to upload a file. Validates the file type and size before processing."""
     folder_model = FolderModel(db= request.app.db)
-    folder = await folder_model.get_folder_or_creare_one(folder_id)
+    folder,folder_DB_id = await folder_model.get_folder_or_creare_one(folder_id)
 
     DataController().validate_file(file)
 
@@ -24,13 +25,15 @@ async def upload_file(request: Request, folder_id: str, file: UploadFile = File(
         async with aiofiles.open(file_path, 'wb') as out_file:
             content = await file.read(file_controller.app_settings.file_chunk_size*1024)
             await out_file.write(content)
-            return {"message": ResponseEnum.FILE_UPLOAD_SUCCESS.value, "filename": file.filename, "file_path": file_path, 'folder_id': str(folder._id)}
+            return {"message": ResponseEnum.FILE_UPLOAD_SUCCESS.value, "folder_id": folder_DB_id, "file_path": file_path, 'folder_id': str(folder._id)}
     except Exception as e:
         raise HTTPException(status_code=400, detail=ResponseEnum.FILE_UPLOAD_FAILURE.value)
     
 @data_router.post("/process")
-async def process_file(folder_id: str, file_id: str, chunk_size: int = 100, chunk_overlap: int = 20):
+async def process_file(request: Request, folder_id: str, file_id: str, chunk_size: int = 100, chunk_overlap: int = 20):
     """Endpoint to process an uploaded file."""
+    folder_model = FolderModel(db= request.app.db)
+    _, folder_DB_id = await folder_model.get_folder_or_creare_one(folder_id)
 
     process_controller = ProcessController(folder_id, file_id)
     documents = process_controller.get_file_documents(file_id)
@@ -38,4 +41,15 @@ async def process_file(folder_id: str, file_id: str, chunk_size: int = 100, chun
     if not chunks or len(chunks) == 0:
         raise HTTPException(status_code=400, detail=ResponseEnum.FILE_PROCESSING_FAILURE.value)
     
-    return {"message": ResponseEnum.FILE_PROCESSING_SUCCESS.value, "chunk_count": len(chunks), "chunks": chunks}
+    # return {"message": ResponseEnum.FILE_PROCESSING_SUCCESS.value, "chunk_count": len(chunks), "chunks": chunks}
+    file_chunks = [
+        ChunksDB(
+            chunk_text=chunk.page_content,
+            chunk_metadata=chunk.metadata,
+            chunk_order=i+1,
+            chunk_folder_id=folder_DB_id
+        ) for i,chunk in enumerate(chunks)
+    ]
+    chunk_model = ChunkModel(db= request.app.db)
+    result = await chunk_model.insert_many_chunks(file_chunks)
+    return result
