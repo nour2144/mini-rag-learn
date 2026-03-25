@@ -1,15 +1,19 @@
 import aiofiles
 import os
-from fastapi import APIRouter, Path, UploadFile, File, HTTPException
+from fastapi import APIRouter, Path, UploadFile, File, HTTPException, Request
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 from ..controllers import DataController, FileController, ProcessController
+from ..models import FolderModel
 from ..enums import ResponseEnum
 
 data_router = APIRouter(prefix="/data", tags=["data"])
 @data_router.post("/upload")
-async def upload_file(folder_id: str, file: UploadFile = File(...,description="File to upload")):
+async def upload_file(request: Request, folder_id: str, file: UploadFile = File(...,description="File to upload")):
     """Endpoint to upload a file. Validates the file type and size before processing."""
+    folder_model = FolderModel(db= request.app.db)
+    folder = await folder_model.get_folder_or_creare_one(folder_id)
+
     DataController().validate_file(file)
 
     file_controller = FileController()
@@ -20,7 +24,7 @@ async def upload_file(folder_id: str, file: UploadFile = File(...,description="F
         async with aiofiles.open(file_path, 'wb') as out_file:
             content = await file.read(file_controller.app_settings.file_chunk_size*1024)
             await out_file.write(content)
-            return {"message": ResponseEnum.FILE_UPLOAD_SUCCESS.value, "filename": file.filename, "file_path": file_path}
+            return {"message": ResponseEnum.FILE_UPLOAD_SUCCESS.value, "filename": file.filename, "file_path": file_path, 'folder_id': str(folder._id)}
     except Exception as e:
         raise HTTPException(status_code=400, detail=ResponseEnum.FILE_UPLOAD_FAILURE.value)
     

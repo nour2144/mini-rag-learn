@@ -3,7 +3,7 @@ import os
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from .enums.ResponseEnum import ResponseEnum
+from .enums import ResponseEnum
 from .helper.config import get_settings
 
 # Base API Router

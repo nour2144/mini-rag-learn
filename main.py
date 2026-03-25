@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
 from api.helper.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
-load_dotenv()  # Load environment variables from .env file  /Deprecated 
+# load_dotenv()  # Load environment variables from .env file  /Deprecated 
 
 from api import base_router
 from api import data_router
