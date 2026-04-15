@@ -9,6 +9,22 @@ class ChunkModel(BaseDBModel):
     def __init__(self, db):
         super().__init__(db)
         self.collection = self.db[CollectionsEnum.Collections_CHUNKS.value]
+
+    @classmethod
+    async def create_instance(cls, db):
+        """Factory method to create an instance of FolderModel and initialize the collection."""
+        instance = cls(db)
+        await instance.init_collection()
+        return instance
+    
+    async def init_collection(self):
+        """Initializes the collection by creating necessary indexes."""
+        all_collections = await self.db.list_collection_names()
+        if CollectionsEnum.Collections_CHUNKS.value not in all_collections:
+            self.db[CollectionsEnum.Collections_CHUNKS.value]
+            indexes = ChunksDB.get_indexes()
+            for index in indexes:
+                self.collection.create_index(index["key"], name=index["name"], unique=index.get("unique", False))
     async def create_chunk(self, chunks: ChunksDB):
         """Creates a new chunk document in the database."""
         result = await self.collection.insert_one(chunks.dict())
@@ -24,4 +40,4 @@ class ChunkModel(BaseDBModel):
     async def insert_many_chunks(self, chunks: list[ChunksDB], batch_size: int = 30):
         """Inserts multiple chunk documents into the database."""
         [await self.collection.bulk_write([InsertOne(chunk.dict()) for chunk in batch]) for batch in [chunks[i:i + batch_size] for i in range(0, len(chunks), batch_size)]]
-        return {"message": f"Inserted {len(chunks)} chunks successfully."}
+        return len(chunks)

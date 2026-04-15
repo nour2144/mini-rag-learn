@@ -18,5 +18,9 @@ class ResponseEnum(Enum):
     #loader responses
     LOADER_INITIALIZATION_SUCCESS = "Loader initialized successfully"
     LOADER_INITIALIZATION_FAILURE = "Loader initialization failed"
+    # No files to process
+    FILE_NOT_FOUND = "File not found in the specified folder"
+    FILE_ID_NOT_FOUND = "File ID not found in the specified folder"
+    NO_FILES_TO_PROCESS = "No files found to process"
     
     

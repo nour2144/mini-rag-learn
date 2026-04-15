@@ -9,3 +9,13 @@ class FolderDB(BaseDB):
         if not value.isalnum():
             raise ValueError("folder_id must be alphanumeric")
         return value
+    @classmethod
+    def get_indexes(cls):
+        return [
+            {
+                "key" : [("folder_id", 1)],
+                "name" : "folder_id_index",
+                "unique" : True
+            }
+        ]
+        

@@ -7,7 +7,22 @@ class FolderModel(BaseDBModel):
     def __init__(self, db):
         super().__init__(db)
         self.collection = self.db[CollectionsEnum.Collections_FOLDERS.value]
-
+    @classmethod
+    async def create_instance(cls, db):
+        """Factory method to create an instance of FolderModel and initialize the collection."""
+        instance = cls(db)
+        await instance.init_collection()
+        return instance
+    
+    async def init_collection(self):
+        """Initializes the collection by creating necessary indexes."""
+        all_collections = await self.db.list_collection_names()
+        if CollectionsEnum.Collections_FOLDERS.value not in all_collections:
+            self.db[CollectionsEnum.Collections_FOLDERS.value]
+            indexes = FolderDB.get_indexes()
+            for index in indexes:
+                self.collection.create_index(index["key"], name=index["name"], unique=index.get("unique", True))
+                
     async def create_folder(self, folder: FolderDB):
         """Creates a new folder document in the database."""
         result = await self.collection.insert_one(folder.dict())
