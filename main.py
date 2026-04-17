@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
 from api.helper.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
+from api.Stores.LLM.LLMProvider import LLMProvider
 # load_dotenv()  # Load environment variables from .env file  /Deprecated 
 
 from api import base_router
@@ -12,9 +13,16 @@ from api import data_router
 settings = get_settings()
 @asynccontextmanager
 async def lifespan(app):
+
     app.db_client = AsyncIOMotorClient(settings.mongo_url)
     app.db = app.db_client[settings.mongo_db_name]
     print("✅ DB connected")
+    app.llm_provider = LLMProvider(config=settings)
+    app.generation_llm = app.llm_provider.create_provider(settings.generation_backend)
+    app.generation_llm.set_generation_LLM(settings.generation_model)
+
+    app.embedding_llm = app.llm_provider.create_provider(settings.embedding_backend)
+    app.embedding_llm.set_embedding_LLM(settings.embedding_model,embedding_model_output_dim=settings.embedding_dimension)
 
     yield   # ← app runs here
 
@@ -30,6 +38,5 @@ app = FastAPI(title=settings.app_name, version=settings.app_version,lifespan=lif
 # async def shutdown_db_client():
 #     app.db_client.close()
 #     return JSONResponse(content={"message": "Database connection closed"}, status_code=status.HTTP_200_OK)
-
 app.include_router(base_router)
 app.include_router(data_router)
